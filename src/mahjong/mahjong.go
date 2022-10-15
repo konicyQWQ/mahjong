@@ -24,6 +24,7 @@ func (m *Mahjong) InitGame(seed int) {
 	}
 
 	m.seed = seed
+	rand.Seed((int64)(seed))
 	rand.Shuffle(len(m.deck), func(i, j int) {
 		m.deck[i], m.deck[j] = m.deck[j], m.deck[i]
 	})
