@@ -51,7 +51,7 @@ func (m *Mahjong) PlayerDrawCard(p *Player) error {
 		return errors.New("GameEnd, can not draw card")
 	}
 
-	p.cards = append(p.cards, m.deck[len(m.deck)-1])
+	p.Cards = append(p.Cards, m.deck[len(m.deck)-1])
 	m.deck = append(m.deck[:len(m.deck)-1])
 
 	return nil
@@ -63,13 +63,13 @@ func (m *Mahjong) PlayerDiscard(p *Player, card string) error {
 		return err
 	}
 
-	idx, err := Find(p.cards, cardInt)
+	idx, err := Find(p.Cards, cardInt)
 	if err != nil {
 		return errors.New(fmt.Sprintf("The %s is not in the player's cards", card))
 	}
 
-	p.discards = append(p.discards, cardInt)
-	p.cards = append(p.cards[:idx], p.cards[idx+1:]...)
+	p.Discards = append(p.Discards, cardInt)
+	p.Cards = append(p.Cards[:idx], p.Cards[idx+1:]...)
 	return nil
 }
 
@@ -86,10 +86,10 @@ func (m *Mahjong) NextTurn() {
 }
 
 func (m *Mahjong) PossibleActions(p *Player) (str string) {
-	canHu := CheckCardsCanHu(p.cards)
+	canHu := CheckCardsCanHu(p.Cards)
 
 	if canHu {
-		str += "A"
+		str += "HU;"
 	}
 
 	return str

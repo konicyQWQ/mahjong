@@ -1,15 +1,17 @@
 package mahjong
 
 type Player struct {
-	cards    []int
-	discards []int
+	Cards    []int
+	Discards []int
+
+	richi bool
 }
 
 func (p *Player) Clear() {
-	p.cards = make([]int, 0)
-	p.discards = make([]int, 0)
+	p.Cards = make([]int, 0)
+	p.Discards = make([]int, 0)
 }
 
 func (p *Player) CardsToString() (string, error) {
-	return MahjongsToString(p.cards)
+	return MahjongsToString(p.Cards)
 }

@@ -104,3 +104,26 @@ func __checkCardsCanHu_Dfs(cards []int, used []bool) (ok bool) {
 
 	return ok
 }
+
+func CheckRichi(cards []int) (ok bool, needDiscard []int) {
+	if len(cards) != 14 {
+		return false, needDiscard
+	}
+
+	tmpCards := make([]int, 14)
+	copy(tmpCards, cards)
+
+	for i, v := range cards {
+		originCard := tmpCards[i]
+		for j := 0; j < 9+9+9+7; j++ {
+			tmpCards[i] = j
+			if CheckCardsCanHu(tmpCards) {
+				needDiscard = append(needDiscard, v)
+				break
+			}
+		}
+		tmpCards[i] = originCard
+	}
+
+	return false, needDiscard
+}
