@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func Find[T int | string](arr []T, el T) (int, error) {
+func Find[T comparable](arr []T, el T) (int, error) {
 	for i := range arr {
 		if arr[i] == el {
 			return i, nil

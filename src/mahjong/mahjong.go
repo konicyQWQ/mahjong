@@ -1,97 +1,84 @@
-// 每个package 关键字之前，需要对包进行概述
 package mahjong
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 )
 
 type Mahjong struct {
 	seed    int
-	players []*Player
-	deck    []int
+	players []Player
+	deck    []Card
 	turn    int
 }
 
-func (m *Mahjong) InitGame(seed int) {
-	// init deck
-	m.deck = make([]int, 0, 136)
+func (m *Mahjong) initSeed(seed int) {
+	m.seed = seed
+	rand.Seed((int64)(seed))
+}
+
+func (m *Mahjong) initDeck() {
+	m.deck = make([]Card, 0, 136)
 	for i := 0; i < 9+9+9+7; i++ {
 		for j := 0; j < 4; j++ {
-			m.deck = append(m.deck, i)
+			v, _ := NewCardFromInt(i)
+			m.deck = append(m.deck, *v)
 		}
 	}
 
-	m.seed = seed
-	rand.Seed((int64)(seed))
 	rand.Shuffle(len(m.deck), func(i, j int) {
 		m.deck[i], m.deck[j] = m.deck[j], m.deck[i]
 	})
+}
 
-	// init player card
-	for _, v := range m.players {
-		v.Clear()
-		for i := 1; i <= 13; i++ {
-			m.PlayerDrawCard(v)
+func (m *Mahjong) initPlayer(playerNum int) {
+	for i := 0; i < playerNum; i++ {
+		m.players = append(m.players, Player{})
+	}
+}
+
+func (m *Mahjong) initPlayerCard() {
+	for j := 0; j < 13; j++ {
+		for i := 0; i < len(m.players); i++ {
+			v, err := m.GetDeckFirstCard()
+			if err != nil {
+				panic("initPlayerCard Internal error")
+			}
+			m.players[i].DrawCard(*v)
 		}
 	}
-
-	// init turn
-	m.turn = 0
 }
 
-func (m *Mahjong) NewPlayer() *Player {
-	p := &Player{}
-	m.players = append(m.players, p)
-	return p
-}
-
-func (m *Mahjong) PlayerDrawCard(p *Player) error {
-	if m.IsGameEnd() {
-		return errors.New("GameEnd, can not draw card")
+func (m *Mahjong) GetDeckFirstCard() (*Card, error) {
+	if len(m.deck) == 0 {
+		return nil, errors.New("No Card")
 	}
 
-	p.Cards = append(p.Cards, m.deck[len(m.deck)-1])
+	ret := m.deck[len(m.deck)-1]
 	m.deck = append(m.deck[:len(m.deck)-1])
 
-	return nil
+	return &ret, nil
 }
 
-func (m *Mahjong) PlayerDiscard(p *Player, card string) error {
-	cardInt, err := Mahjong2int(card)
-	if err != nil {
-		return err
-	}
-
-	idx, err := Find(p.Cards, cardInt)
-	if err != nil {
-		return errors.New(fmt.Sprintf("The %s is not in the player's cards", card))
-	}
-
-	p.Discards = append(p.Discards, cardInt)
-	p.Cards = append(p.Cards[:idx], p.Cards[idx+1:]...)
-	return nil
+func (m *Mahjong) InitGame(seed int, playerNum int) {
+	m.initSeed(seed)
+	m.initDeck()
+	m.initPlayer(playerNum)
+	m.initPlayerCard()
 }
 
-func (m *Mahjong) IsGameEnd() bool {
-	return len(m.deck) == 0
+func (m *Mahjong) GetPlayerNumber() int {
+	return len(m.players)
 }
 
-func (m *Mahjong) WhosTurn() *Player {
-	return m.players[m.turn]
+func (m *Mahjong) GetIthPlayer(i int) *Player {
+	return &m.players[i]
+}
+
+func (m *Mahjong) WhosTurn() int {
+	return m.turn
 }
 
 func (m *Mahjong) NextTurn() {
-	m.turn++
-}
-
-func (m *Mahjong) PossibleActions(p *Player) (str string) {
-	canHu := CheckCardsCanHu(p.Cards)
-
-	if canHu {
-		str += "HU;"
-	}
-
-	return str
+	m.turn = (m.turn + 1) % m.GetPlayerNumber()
 }
